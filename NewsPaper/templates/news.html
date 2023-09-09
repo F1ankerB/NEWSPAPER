@@ -1,0 +1,20 @@
+<!-- news.html -->
+
+{% extends 'flatpages/default.html' %}
+
+{% block title %}News{% endblock %}
+
+{% block content %}
+
+<h1>Все новости, количество - {{news_count}}</h1>
+{% if news %}
+
+{% for n in news %}
+<h2>{{ n.title }}</h2>
+<p>{{ n.created_at}}</p>
+<p>{{ n.text|truncatewords:20 }}</p>
+{% endfor %}
+{% else %}
+<h2>Новостей нет!</h2>
+{% endif %}
+{% endblock %}
