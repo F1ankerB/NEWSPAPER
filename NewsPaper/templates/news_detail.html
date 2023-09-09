@@ -1,5 +1,5 @@
 {% extends 'flatpages/default.html' %}
-
+{% load my_filters %}
 <!-- Название у нас будет Product -->
 {% block title %}
 News Detail
@@ -7,9 +7,9 @@ News Detail
 
 <!-- В контенте на странице мы выводим саму новость -->
 {% block content %}
-<h1>{{ news_detail.title }}</h1>
+<h1>{{ news_detail.title|censor }}</h1>
 <p>Автор: {{ news_detail.author }}</p>
 <p>Дата публикации: {{ news_detail.created_at }}</p>
-<p>{{ news_detail.text }}</p>
+<p>{{ news_detail.text|censor }}</p>
 <!-- Здесь вы можете добавить другие поля из вашей модели -->
 {% endblock content %}

@@ -1,7 +1,7 @@
 <!-- news.html -->
 
 {% extends 'flatpages/default.html' %}
-
+{% load my_filters %}
 {% block title %}News{% endblock %}
 
 {% block content %}
@@ -10,9 +10,9 @@
 {% if news %}
 
 {% for n in news %}
-<h2>{{ n.title }}</h2>
+<h2>{{ n.title|censor }}</h2>
 <p>{{ n.created_at}}</p>
-<p>{{ n.text|truncatewords:20 }}</p>
+<p>{{ n.text|truncatewords:20|censor }}</p>
 {% endfor %}
 {% else %}
 <h2>Новостей нет!</h2>
