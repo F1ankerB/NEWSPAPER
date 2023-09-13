@@ -1,4 +1,5 @@
 from django.db import models
+from django.urls import reverse
 from django.contrib.auth.models import User
 from django.db.models import Sum
 class Author(models.Model):
@@ -37,6 +38,8 @@ class Post(models.Model):
 
     def preview(self):
         return self.text[:124] + '...'
+
+
 
 class PostCategory(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
