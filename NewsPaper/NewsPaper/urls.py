@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from news.views import (NewsList, NewsDetail, PostCreate,PostUpdate,PostDelete,ArticleCreate,ArticleUpdate,ArticleDelete
+from news.views import (NewsList, NewsDetail, PostCreate,PostUpdate,PostDelete,ArticleCreate,ArticleUpdate,ArticleDelete,become_author
                         )
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,5 +29,8 @@ urlpatterns = [
     path('articles/create/', ArticleCreate.as_view(), name='article_create'),
     path('articles/<int:pk>/update/', ArticleUpdate.as_view(), name='article_update'),
     path('articles/<int:pk>/delete/', ArticleDelete.as_view(), name='article_delete'),
+    path('accounts/', include('allauth.urls')),
+    path('become_author/', become_author, name='become_author'),
+
 
 ]
