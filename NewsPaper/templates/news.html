@@ -17,10 +17,24 @@
        {# Добавим кнопку отправки данных формы #}
        <input type="submit" value="Найти" />
    </form>
+{% if current_category %}
+    <h2>Новости категории: {{ current_category.name }}</h2>
+    <a href="{% url 'subscribe_to_category' category.id %}">Подписаться</a>
+{% endif %}
 {% for n in news %}
 <h2>{{ n.title|censor }}</h2>
 <p>{{ n.created_at}}</p>
 <p>{{ n.text|truncatewords:20|censor }}</p>
+<!-- Вывод категорий для каждой новости -->
+<p>Категории:
+{% for category in n.categories.all %}
+    {{ category.name }}
+    {% if user not in category.subscribers.all %}
+        <a href="{% url 'subscribe_to_category' category.id %}" class="btn btn-primary">Подписаться на категорию</a>
+    {% endif %}
+    {% if not forloop.last %}, {% endif %}
+{% endfor %}
+</p>
 {% endfor %}
 {% else %}
 <h2>Новостей нет!</h2>

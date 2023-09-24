@@ -6,16 +6,34 @@ from django.views.generic import (
 )
 from django.urls import reverse_lazy
 from django_filters.views import FilterView
-from .models import Post
+from .models import Post,Author
 from .filters import PostFilter
 from .forms import PostForm
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from django.contrib.auth.models import Group
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.shortcuts import get_object_or_404
+from .models import Category
+from django.core.mail import send_mail
+from django.shortcuts import render
+from datetime import datetime, timedelta
+from django.http import HttpResponseForbidden
+@login_required
+def subscribe_to_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    if request.user not in category.subscribers.all():
+        category.subscribers.add(request.user)
+    else:
+        # Если пользователь уже подписан, вы можете решить, отписывать его при повторном нажатии или оставить без изменений.
+        # Для отписки используйте следующий код:
+        # category.subscribers.remove(request.user)
+        pass
+    return redirect('/news')
 @login_required
 def become_author(request):
     author_group = Group.objects.get(name='authors')
+    author, created = Author.objects.get_or_create(user=request.user)
     author_group.user_set.add(request.user)
     return redirect('/news')
 class NewsList(ListView):
@@ -41,19 +59,52 @@ class NewsDetail(DetailView):
     template_name = 'news_detail.html'
     context_object_name = 'news_detail'
 
-class PostCreate(PermissionRequiredMixin,CreateView):
-    permission_required='news.add_post'
-    # Указываем нашу разработанную форму
-    form_class = PostForm
 
-    # модель товаров
+from datetime import datetime, timedelta
+class PostCreate(PermissionRequiredMixin, CreateView):
+    permission_required = 'news.add_post'
+    form_class = PostForm
     model = Post
-    # и новый шаблон, в котором используется форма.
     template_name = 'post_edit.html'
     success_url = '/news'
+
     def form_valid(self, form):
-        form.instance.post_type = 'news'  # Установка post_type как "article"
-        return super().form_valid(form)
+        author, created = Author.objects.get_or_create(user=self.request.user)
+
+        # Определяем начало и конец текущего дня
+        today_start = datetime.combine(datetime.now(), datetime.min.time())
+        today_end = datetime.combine(datetime.now(), datetime.max.time())
+
+        # Подсчитываем количество постов пользователя за текущий день
+        post_count = Post.objects.filter(author=author, created_at__range=(today_start, today_end)).count()
+
+        # Устанавливаем максимальное количество постов в день (3)
+        max_posts_per_day = 3
+
+        # Проверяем, не превысил ли пользователь максимальное количество постов
+        if post_count >= max_posts_per_day:
+            return HttpResponseForbidden("Вы не можете опубликовать больше трех постов в день.")
+
+        # Устанавливаем автора поста в текущего пользователя перед сохранением
+        form.instance.author = author
+
+        form.instance.post_type = 'news'
+        response = super().form_valid(form)  # Сначала вызываем родительский метод
+        self.send_emails_for_new_post(self.object)  # Затем отправляем письма
+        return response
+    def send_emails_for_new_post(self, post):
+        for category in post.categories.all():
+            for subscriber in category.subscribers.all():
+                self.send_email_to_subscriber(subscriber, post)
+
+    def send_email_to_subscriber(self, user, post):
+        subject = post.title
+        message = f"Здравствуй, {user.username}. Новая статья в твоём любимом разделе!\n\n"
+        message += f"<h2>{post.title}</h2>\n<p>{post.text[:50]}...</p>"
+        post_url = self.request.build_absolute_uri(post.get_absolute_url())
+        message += f"<p><a href='{post_url}'>Читать полностью</a></p>"
+
+        send_mail(subject, "", "te4kkaunt@yandex.ru", [user.email], html_message=message)
 
 class PostUpdate(PermissionRequiredMixin,UpdateView):
     permission_required = 'news.change_post'

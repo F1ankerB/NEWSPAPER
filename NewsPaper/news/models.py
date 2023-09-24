@@ -25,9 +25,15 @@ class Author(models.Model):
         self.rating = post_ratings + comments_ratings + post_comment_ratings
         self.save()
 
+    def __str__(self):
+        return self.user.username
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    subscribers = models.ManyToManyField(User, related_name='subscriptions')
+
+    def __str__(self):
+        return self.name
 
 
 class Post(models.Model):
@@ -50,6 +56,8 @@ class Post(models.Model):
     def preview(self):
         return self.text[:124] + '...'
 
+    def get_absolute_url(self):
+        return reverse('news_detail', args=[str(self.pk)])
 
 
 class PostCategory(models.Model):

@@ -16,13 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from news.views import (NewsList, NewsDetail, PostCreate,PostUpdate,PostDelete,ArticleCreate,ArticleUpdate,ArticleDelete,become_author
+from news.views import (NewsList, NewsDetail, PostCreate,PostUpdate,PostDelete,ArticleCreate,ArticleUpdate,ArticleDelete,become_author, subscribe_to_category
                         )
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pages/', include('django.contrib.flatpages.urls')),
     path('news/', NewsList.as_view()),
-    path('news/<int:pk>/', NewsDetail.as_view()),
+    path('news/<int:pk>/', NewsDetail.as_view(),name='news_detail'),
     path('news/create/', PostCreate.as_view(), name='post_create'),
     path('news/<int:pk>/update/', PostUpdate.as_view(), name='post_update'),
     path('news/<int:pk>/delete/', PostDelete.as_view(), name='post_delete'),
@@ -31,6 +31,6 @@ urlpatterns = [
     path('articles/<int:pk>/delete/', ArticleDelete.as_view(), name='article_delete'),
     path('accounts/', include('allauth.urls')),
     path('become_author/', become_author, name='become_author'),
-
+    path('subscribe/<int:category_id>/', subscribe_to_category, name='subscribe_to_category'),
 
 ]
