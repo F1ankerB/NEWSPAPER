@@ -11,7 +11,7 @@ from celery.schedules import crontab
 app.conf.beat_schedule = {
     'send-weekly-email': {
         'task': 'news.tasks.send_weekly_email',
-        'schedule': timedelta(minutes=1),
+        'schedule': crontab(hour=8, minute=0, day_of_week='monday'),
     },
 }
 
