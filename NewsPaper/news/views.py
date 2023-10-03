@@ -19,6 +19,8 @@ from django.core.mail import send_mail
 from django.shortcuts import render
 from datetime import datetime, timedelta
 from django.http import HttpResponseForbidden
+from news.tasks import send_email_to_subscriber
+
 @login_required
 def subscribe_to_category(request, category_id):
     category = get_object_or_404(Category, id=category_id)
@@ -92,10 +94,11 @@ class PostCreate(PermissionRequiredMixin, CreateView):
         response = super().form_valid(form)  # Сначала вызываем родительский метод
         self.send_emails_for_new_post(self.object)  # Затем отправляем письма
         return response
+
     def send_emails_for_new_post(self, post):
         for category in post.categories.all():
             for subscriber in category.subscribers.all():
-                self.send_email_to_subscriber(subscriber, post)
+                send_email_to_subscriber.delay(subscriber.id,post.id)  # Используйте .delay для асинхронного вызова задачи Celery
 
     def send_email_to_subscriber(self, user, post):
         subject = post.title
