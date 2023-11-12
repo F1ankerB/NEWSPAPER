@@ -10,6 +10,8 @@
 <h1>Все новости, количество - {{news_count}}</h1>
 <a href="{% url 'become_author' %}">Стать автором</a>
 {% if news %}
+{% load cache %}
+{% cache 30 finder %}
    {# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
    <form action="" method="get">
        {# Переменная, которую мы передали через контекст, может сгенерировать нам форму с полями #}
@@ -17,10 +19,13 @@
        {# Добавим кнопку отправки данных формы #}
        <input type="submit" value="Найти" />
    </form>
+{% endcache %}
+{% cache 30 category %}
 {% if current_category %}
     <h2>Новости категории: {{ current_category.name }}</h2>
     <a href="{% url 'subscribe_to_category' category.id %}">Подписаться</a>
 {% endif %}
+{% endcache %}
 {% for n in news %}
 <h2>{{ n.title|censor }}</h2>
 <p>{{ n.created_at}}</p>
@@ -39,7 +44,7 @@
 {% else %}
 <h2>Новостей нет!</h2>
 {% endif %}
-
+{% cache 15 pagin %}
  {% if page_obj.has_previous %}
        {# Для каждой ссылки пагинации указываем обработку через новый тег #}
        <a href="?{% url_replace page=1 %}">1</a>
@@ -58,4 +63,5 @@
            <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
        {% endif %}
    {% endif %}
+{% endcache %}
 {% endblock %}

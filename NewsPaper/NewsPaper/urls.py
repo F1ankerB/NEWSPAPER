@@ -18,14 +18,16 @@ from django.contrib import admin
 from django.urls import path, include
 from news.views import (NewsList, NewsDetail, PostCreate,PostUpdate,PostDelete,ArticleCreate,ArticleUpdate,ArticleDelete,become_author, subscribe_to_category
                         )
+from django.views.decorators.cache import cache_page
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('pages/', include('django.contrib.flatpages.urls')),
-    path('news/', NewsList.as_view()),
+    path('news/', cache_page(60*1)(NewsList.as_view())),
     path('news/<int:pk>/', NewsDetail.as_view(),name='news_detail'),
-    path('news/create/', PostCreate.as_view(), name='post_create'),
-    path('news/<int:pk>/update/', PostUpdate.as_view(), name='post_update'),
-    path('news/<int:pk>/delete/', PostDelete.as_view(), name='post_delete'),
+    path('news/create/', cache_page(60*5)(PostCreate.as_view()), name='post_create'),
+    path('news/<int:pk>/update/', cache_page(60*5)(PostUpdate.as_view()), name='post_update'),
+    path('news/<int:pk>/delete/', cache_page(60*5)(PostDelete.as_view()), name='post_delete'),
     path('articles/create/', ArticleCreate.as_view(), name='article_create'),
     path('articles/<int:pk>/update/', ArticleUpdate.as_view(), name='article_update'),
     path('articles/<int:pk>/delete/', ArticleDelete.as_view(), name='article_delete'),

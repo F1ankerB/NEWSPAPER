@@ -45,6 +45,8 @@ class Post(models.Model):
     text = models.TextField()
     rating = models.FloatField(default=0.0)
 
+    def __str__(self):
+        return self.title  # Или любое другое поле, которое вы хотите видеть в списке
     def like(self):
         self.rating += 1
         self.save()
@@ -59,7 +61,9 @@ class Post(models.Model):
     def get_absolute_url(self):
         return reverse('news_detail', args=[str(self.pk)])
 
-
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)  # сначала вызываем метод родителя, чтобы объект сохранился
+        cache.delete(f'product-{self.pk}')  # затем удаляем его из кэша, чтобы сбросить его
 class PostCategory(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
