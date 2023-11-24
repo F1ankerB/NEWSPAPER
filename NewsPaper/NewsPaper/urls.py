@@ -21,6 +21,7 @@ from news.views import (NewsList, NewsDetail, PostCreate,PostUpdate,PostDelete,A
 from django.views.decorators.cache import cache_page
 
 urlpatterns = [
+    path('i18n/', include('django.conf.urls.i18n')),
     path('admin/', admin.site.urls),
     path('pages/', include('django.contrib.flatpages.urls')),
     path('news/', cache_page(60*1)(NewsList.as_view())),

@@ -1,29 +1,54 @@
-<!-- news.html -->
-
 {% extends 'flatpages/default.html' %}
-{% load my_filters %}
-{% load custom_tags %}
-{% block title %}News{% endblock %}
+{% load i18n my_filters custom_tags %}
+{% block title %}{% trans "News" %}{% endblock %}
 
 {% block content %}
 
-<h1>Все новости, количество - {{news_count}}</h1>
-<a href="{% url 'become_author' %}">Стать автором</a>
+{% load i18n %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page title</title>
+</head>
+<body>
+    <form action="{% url 'set_language' %}" method="POST"> {% csrf_token %} <!-- Не забываем по csrf_token для POST запросов -->
+        <input type="hidden" name="next" value="{{ redirect_to }}">
+
+        <select name="language" id="">
+            {% get_available_languages as LANGUAGES %} <!-- получаем языки -->
+            {% get_language_info_list for LANGUAGES as languages %} <!-- Помещаем их в список languages -->
+
+            {% for language in languages %} <!-- Итерируясь по списку, выводим их название на языке пользователя и код -->
+                <option value="{{ language.code }}" {% if language.code == LANGUAGE_CODE %} selected {% endif %}>
+                    {{ language.name_local }} - {{ language.code }}
+                </option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="set">
+    </form>
+
+    {{ string }} <!-- Это уже знакомая нам переменная, просто засунули её в шаблон -->
+    {% trans "Включена поддержка только русского и английского языков" %}! <!-- Переводим строку -->
+</body>
+</html>
+
+<h1>{% trans "All news, count -" %} {{news_count}}</h1>
+<a href="{% url 'become_author' %}">{% trans "Become an author" %}</a>
 {% if news %}
 {% load cache %}
 {% cache 30 finder %}
-   {# Добавляем форму, которая объединяет набор полей, которые будут отправляться в запросе #}
    <form action="" method="get">
-       {# Переменная, которую мы передали через контекст, может сгенерировать нам форму с полями #}
        {{ filterset.form.as_p }}
-       {# Добавим кнопку отправки данных формы #}
-       <input type="submit" value="Найти" />
+       <input type="submit" value="{% trans "Search" %}" />
    </form>
 {% endcache %}
 {% cache 30 category %}
 {% if current_category %}
-    <h2>Новости категории: {{ current_category.name }}</h2>
-    <a href="{% url 'subscribe_to_category' category.id %}">Подписаться</a>
+    <h2>{% trans "Новости категории:" %} {{ current_category.name }}</h2>
+    <a href="{% url 'subscribe_to_category' category.id %}">{% trans "Подписаться" %}</a>
 {% endif %}
 {% endcache %}
 {% for n in news %}
@@ -31,22 +56,21 @@
 <p>{{ n.created_at}}</p>
 <p>{{ n.text|truncatewords:20|censor }}</p>
 <!-- Вывод категорий для каждой новости -->
-<p>Категории:
+<p>{% trans "Категории:" %}
 {% for category in n.categories.all %}
     {{ category.name }}
     {% if user not in category.subscribers.all %}
-        <a href="{% url 'subscribe_to_category' category.id %}" class="btn btn-primary">Подписаться на категорию</a>
+        <a href="{% url 'subscribe_to_category' category.id %}" class="btn btn-primary">{% trans "Подписаться на категорию" %}</a>
     {% endif %}
     {% if not forloop.last %}, {% endif %}
 {% endfor %}
 </p>
 {% endfor %}
 {% else %}
-<h2>Новостей нет!</h2>
+<h2>{% trans "Новостей нет!" %}</h2>
 {% endif %}
 {% cache 15 pagin %}
  {% if page_obj.has_previous %}
-       {# Для каждой ссылки пагинации указываем обработку через новый тег #}
        <a href="?{% url_replace page=1 %}">1</a>
        {% if page_obj.previous_page_number != 1 %}
            ...

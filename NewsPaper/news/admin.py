@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Category, Author, Post, PostCategory, Comment
+from modeltranslation.admin import TranslationAdmin
 
 admin.site.register(Category)
 admin.site.register(Author)
